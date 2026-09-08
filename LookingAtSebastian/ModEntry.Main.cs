@@ -7,6 +7,8 @@ namespace LookingAtSebastian;
 
 public sealed partial class ModEntry
 {
+    private const string OutfitReactionActiveModDataKey = "NatrollEXE.OutfitReactions/ReactionActive";
+
     private void OnWarped(object? sender, WarpedEventArgs e)
     {
         if (!e.IsLocalPlayer)
@@ -61,6 +63,17 @@ public sealed partial class ModEntry
         if (sebastian is null || sebastian.currentLocation != Game1.currentLocation)
         {
             this.LastDistanceToSebastian = float.MaxValue;
+            return;
+        }
+
+        // Outfit Reactions owns the temporary pose while it is showing an outfit
+        // reaction. Do not start, maintain, or restore a looking sequence over it.
+        if (Game1.player.modData.ContainsKey(OutfitReactionActiveModDataKey))
+        {
+            this.ResetCloseStareSequence(restoreFacing: false);
+            this.ClearSebastianFacingRestoreState();
+            this.ClearSebastianSpecialAnimationRestoreState();
+            this.LastDistanceToSebastian = Vector2.Distance(player.Position, sebastian.Position);
             return;
         }
 
